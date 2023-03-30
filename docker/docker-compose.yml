@@ -1,0 +1,61 @@
+version: '3.3'
+
+services:
+#  nest_node_starter_local:
+#    build:
+#      context: ../
+#      dockerfile: ./docker/Dockerfile
+#    command: npm run start:dev
+#    volumes:
+#      - ../src:/usr/src/app/src
+#    env_file:
+#      - ../.env
+#    ports:
+#      - '9000:9000'
+#    depends_on:
+#      - database
+
+  database:
+    image: mysql:8.0.13
+    command:
+      [
+          'mysqld',
+          '--character-set-server=utf8mb4',
+          '--collation-server=utf8mb4_unicode_ci',
+          '--default-authentication-plugin=mysql_native_password',
+      ]
+    restart: always
+    ports:
+      - '3307:3306'
+    volumes:
+      - ./db_data:/var/lib/mysql
+    container_name: power_mysql
+    environment:
+      - MYSQL_ROOT_PASSWORD=keep_this_a_secret
+      - MYSQL_DATABASE=power_house
+      - MYSQL_USER=this_is_sparta
+      - MYSQL_PASSWORD=keep_this_a_secret
+
+  rabbitmq:
+    image: rabbitmq:3-management
+    ports:
+      - '15672:15672'
+      - '5672:5672'
+    volumes:
+      - ../.ops/rabbitmq.conf:/etc/rabbitmq/rabbitmq.conf:ro
+      - ../.ops/rabbitmq_definitions.json:/etc/rabbitmq/definitions.json:ro
+
+  redis:
+    image: 'bitnami/redis:6.2.6'
+    environment:
+      # - ALLOW_EMPTY_PASSWORD=yes
+      - REDIS_PASSWORD=password123
+      - REDIS_USER=root
+    ports:
+      - '6378:6379'
+    volumes:
+      - 'redis_data:/bitnami/redis/data'
+
+volumes:
+  redis_data:
+    driver: local
